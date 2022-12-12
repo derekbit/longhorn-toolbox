@@ -1,0 +1,36 @@
+global:
+  resolve_timeout: 5m
+route:
+  group_by: [alertname]
+  receiver: email_and_slack
+receivers:
+- name: email_and_slack
+  email_configs:
+  - to: <the email address to send notifications to>
+    from: <the sender address>
+    smarthost: <the SMTP host through which emails are sent>
+    # SMTP authentication information.
+    auth_username: <the username>
+    auth_identity: <the identity>
+    auth_password: <the password>
+    headers:
+      subject: 'Longhorn-Alert'
+    text: |-
+      {{ range .Alerts }}
+        *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
+        *Description:* {{ .Annotations.description }}
+        *Details:*
+        {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+        {{ end }}
+      {{ end }}
+  slack_configs:
+  - api_url: <the Slack webhook URL>
+    channel: <the channel or user to send notifications to>
+    text: |-
+      {{ range .Alerts }}
+        *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
+        *Description:* {{ .Annotations.description }}
+        *Details:*
+        {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+        {{ end }}
+      {{ end }}
